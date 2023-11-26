@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace AutoClickerTests
+﻿namespace AutoClickerTests
 {
     [TestClass]
     public class UnitTest1

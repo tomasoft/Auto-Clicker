@@ -8,9 +8,10 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>AutoClicker</RootNamespace>
     <AssemblyName>AutoClicker</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SimulatedInput">
+      <HintPath>..\..\..\inputsimulator\SimulatedInput\bin\Debug\net8.0\SimulatedInput.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -51,8 +55,11 @@
     <Compile Include="AutoClicker.Designer.cs">
       <DependentUpon>AutoClicker.cs</DependentUpon>
     </Compile>
+    <Compile Include="GlobalKeyboardHook.cs" />
+    <Compile Include="GlobalKeyboardHookEventArgs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Win32.cs" />
     <EmbeddedResource Include="AutoClicker.resx">
       <DependentUpon>AutoClicker.cs</DependentUpon>
     </EmbeddedResource>
@@ -64,7 +71,9 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

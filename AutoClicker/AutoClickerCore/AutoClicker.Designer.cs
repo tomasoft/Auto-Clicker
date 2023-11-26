@@ -1,4 +1,4 @@
-﻿namespace AutoClicker
+﻿namespace AutoClickerCore
 {
     partial class AutoClicker
     {

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
-using SimulatedInput;
 
-
-namespace AutoClicker
+namespace AutoClickerCore
 {
     public partial class AutoClicker : Form
     {
@@ -61,7 +59,7 @@ namespace AutoClicker
 
             if (e.KeyboardData.VirtualCode.Equals((int)Keys.F8))
             {
-                ToggleAutoClicker(!_run);
+                //ToggleAutoClicker(!_run);
                 if (e.KeyboardData.IsControlPressed)
                     ToggleAutoType(!_type);
             }
@@ -331,8 +329,8 @@ namespace AutoClicker
             //isim.Keyboard.KeyUp(VirtualKeyCode.VK_E);
 
             _globalKeyboardHook.SendKeys(key, true);
-            Thread.Sleep(pressActiveTime);
-            _globalKeyboardHook.SendKeys(key, false);
+            //Thread.Sleep(pressActiveTime);
+            //_globalKeyboardHook.SendKeys(key, false);
         }
         
 
