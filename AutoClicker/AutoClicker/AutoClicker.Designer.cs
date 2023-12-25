@@ -51,19 +51,21 @@
             this.delayTime = new System.Windows.Forms.TextBox();
             this.pressedFor = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.chkKeepPressed = new System.Windows.Forms.CheckBox();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // minWait
             // 
-            this.minWait.Location = new System.Drawing.Point(162, 12);
+            this.minWait.Location = new System.Drawing.Point(162, 37);
             this.minWait.Name = "minWait";
             this.minWait.Size = new System.Drawing.Size(100, 20);
             this.minWait.TabIndex = 3;
             // 
             // maxWait
             // 
-            this.maxWait.Location = new System.Drawing.Point(162, 35);
+            this.maxWait.Location = new System.Drawing.Point(162, 60);
             this.maxWait.Name = "maxWait";
             this.maxWait.Size = new System.Drawing.Size(100, 20);
             this.maxWait.TabIndex = 4;
@@ -71,7 +73,7 @@
             // asdfas
             // 
             this.asdfas.AutoSize = true;
-            this.asdfas.Location = new System.Drawing.Point(13, 12);
+            this.asdfas.Location = new System.Drawing.Point(13, 37);
             this.asdfas.Name = "asdfas";
             this.asdfas.Size = new System.Drawing.Size(71, 13);
             this.asdfas.TabIndex = 5;
@@ -80,7 +82,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 38);
+            this.label2.Location = new System.Drawing.Point(13, 63);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(74, 13);
             this.label2.TabIndex = 6;
@@ -135,7 +137,7 @@
             // chkInRobloxOnly
             // 
             this.chkInRobloxOnly.AutoSize = true;
-            this.chkInRobloxOnly.Location = new System.Drawing.Point(162, 159);
+            this.chkInRobloxOnly.Location = new System.Drawing.Point(162, 184);
             this.chkInRobloxOnly.Name = "chkInRobloxOnly";
             this.chkInRobloxOnly.Size = new System.Drawing.Size(15, 14);
             this.chkInRobloxOnly.TabIndex = 7;
@@ -144,7 +146,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 159);
+            this.label1.Location = new System.Drawing.Point(13, 184);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(86, 13);
             this.label1.TabIndex = 8;
@@ -152,9 +154,9 @@
             // 
             // btnHide
             // 
-            this.btnHide.Location = new System.Drawing.Point(204, 178);
+            this.btnHide.Location = new System.Drawing.Point(204, 203);
             this.btnHide.Name = "btnHide";
-            this.btnHide.Size = new System.Drawing.Size(58, 27);
+            this.btnHide.Size = new System.Drawing.Size(58, 32);
             this.btnHide.TabIndex = 9;
             this.btnHide.Text = "OK";
             this.btnHide.UseVisualStyleBackColor = true;
@@ -163,7 +165,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(13, 84);
+            this.label3.Location = new System.Drawing.Point(13, 109);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(78, 13);
             this.label3.TabIndex = 10;
@@ -171,7 +173,7 @@
             // 
             // buttonToPress
             // 
-            this.buttonToPress.Location = new System.Drawing.Point(162, 81);
+            this.buttonToPress.Location = new System.Drawing.Point(162, 106);
             this.buttonToPress.Name = "buttonToPress";
             this.buttonToPress.Size = new System.Drawing.Size(100, 20);
             this.buttonToPress.TabIndex = 11;
@@ -180,7 +182,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(13, 61);
+            this.label4.Location = new System.Drawing.Point(13, 86);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(92, 13);
             this.label4.TabIndex = 12;
@@ -189,7 +191,7 @@
             // chkAutoType
             // 
             this.chkAutoType.AutoSize = true;
-            this.chkAutoType.Location = new System.Drawing.Point(162, 61);
+            this.chkAutoType.Location = new System.Drawing.Point(162, 86);
             this.chkAutoType.Name = "chkAutoType";
             this.chkAutoType.Size = new System.Drawing.Size(15, 14);
             this.chkAutoType.TabIndex = 13;
@@ -199,7 +201,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(13, 110);
+            this.label5.Location = new System.Drawing.Point(13, 135);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(56, 13);
             this.label5.TabIndex = 14;
@@ -207,14 +209,14 @@
             // 
             // delayTime
             // 
-            this.delayTime.Location = new System.Drawing.Point(162, 107);
+            this.delayTime.Location = new System.Drawing.Point(162, 132);
             this.delayTime.Name = "delayTime";
             this.delayTime.Size = new System.Drawing.Size(100, 20);
             this.delayTime.TabIndex = 15;
             // 
             // pressedFor
             // 
-            this.pressedFor.Location = new System.Drawing.Point(162, 133);
+            this.pressedFor.Location = new System.Drawing.Point(162, 158);
             this.pressedFor.Name = "pressedFor";
             this.pressedFor.Size = new System.Drawing.Size(100, 20);
             this.pressedFor.TabIndex = 17;
@@ -222,18 +224,39 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(13, 136);
+            this.label6.Location = new System.Drawing.Point(13, 161);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(82, 13);
             this.label6.TabIndex = 16;
             this.label6.Text = "Pressed for (ms)";
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(13, 14);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(79, 13);
+            this.label7.TabIndex = 19;
+            this.label7.Text = "Keep Pressed?";
+            // 
+            // chkKeepPressed
+            // 
+            this.chkKeepPressed.AutoSize = true;
+            this.chkKeepPressed.Location = new System.Drawing.Point(162, 14);
+            this.chkKeepPressed.Name = "chkKeepPressed";
+            this.chkKeepPressed.Size = new System.Drawing.Size(15, 14);
+            this.chkKeepPressed.TabIndex = 18;
+            this.chkKeepPressed.UseVisualStyleBackColor = true;
+            this.chkKeepPressed.CheckedChanged += new System.EventHandler(this.chkKeepPressed_CheckedChanged);
+            // 
             // AutoClicker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(274, 256);
+            this.ClientSize = new System.Drawing.Size(288, 280);
             this.ControlBox = false;
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.chkKeepPressed);
             this.Controls.Add(this.pressedFor);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.delayTime);
@@ -289,6 +312,8 @@
         private System.Windows.Forms.TextBox delayTime;
         private System.Windows.Forms.TextBox pressedFor;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.CheckBox chkKeepPressed;
     }
 }
 

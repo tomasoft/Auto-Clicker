@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
-using SimulatedInput;
 
 
 namespace AutoClicker
@@ -10,14 +9,14 @@ namespace AutoClicker
     {
         #region Variables
 
-        private const int MinTimeDefault = 50;
-        private const int MaxTimeDefault = 60;
+        private const int MinTimeDefault = 45;
+        private const int MaxTimeDefault = 55;
         private const int DelayTime = 5000;
-        private const int PressedFor = 1000;
+        private const int PressedFor = 500;
         private const string ButtonToPress = "E";
         
-        private bool _run;
-        private bool _type;
+        private bool _clickMouse;
+        private bool _pressKey;
 
         private GlobalKeyboardHook _globalKeyboardHook;
 
@@ -61,9 +60,9 @@ namespace AutoClicker
 
             if (e.KeyboardData.VirtualCode.Equals((int)Keys.F8))
             {
-                ToggleAutoClicker(!_run);
+                ToggleAutoClicker(!_clickMouse);
                 if (e.KeyboardData.IsControlPressed)
-                    ToggleAutoType(!_type);
+                    ToggleAutoType(!_pressKey);
             }
         }
 
@@ -78,12 +77,12 @@ namespace AutoClicker
                 {
                     AutoTypeOnNewThread();
                     chkAutoType.Checked = true;
-                    _type = true;
+                    _pressKey = true;
                 }
                 else
                 {
                     chkAutoType.Checked = false;
-                    _type = false;
+                    _pressKey = false;
                 }
             }
             else
@@ -132,6 +131,9 @@ namespace AutoClicker
             this.WindowState = FormWindowState.Normal;
         }
 
+        private void chkAutoType_CheckedChanged(object sender, EventArgs e) => 
+            ToggleAutoType(chkAutoType.Checked);
+
         #endregion
 
         #region Form Methods
@@ -165,13 +167,13 @@ namespace AutoClicker
                 if (active)
                 {
                     AutoClickOnNewThread();
-                    _run = true;
+                    _clickMouse = true;
                     DisableSettingFields();
                 }
                 else
                 {
-                    _run = false;
-                    _type = false;
+                    _clickMouse = false;
+                    _pressKey = false;
                     EnableSettingFields();
                 }
             }
@@ -277,7 +279,7 @@ namespace AutoClicker
             var minWaitTime = int.Parse(minWait.Text);
             var maxWaitTime = int.Parse(maxWait.Text);
 
-            while (_run)
+            while (_clickMouse)
             {
                 var rnd = new Random();
                 var timeBetweenClicks = rnd.Next(minWaitTime, maxWaitTime);
@@ -290,7 +292,7 @@ namespace AutoClicker
         {
             var pressDelayTime = int.Parse(delayTime.Text);
             
-            while (_type)
+            while (_pressKey)
             {
                 DoType();
                 Thread.Sleep(pressDelayTime);
@@ -304,7 +306,7 @@ namespace AutoClicker
         {
             var isMouseInsideRobloxWindow = Win32.IsMouseInsideRobloxWindow(chkInRobloxOnly.Checked);
 
-            if (!_run || !isMouseInsideRobloxWindow) return;
+            if (!_clickMouse || !isMouseInsideRobloxWindow) return;
 
             //Call the imported function with the cursor's current position
             var x = (uint) Cursor.Position.X;
@@ -319,7 +321,7 @@ namespace AutoClicker
         {
             var isMouseInsideRobloxWindow = Win32.IsMouseInsideRobloxWindow(chkInRobloxOnly.Checked);
 
-            if (!_type || !isMouseInsideRobloxWindow) return;
+            if (!_pressKey || !isMouseInsideRobloxWindow) return;
 
             var key = (Keys)Enum.Parse(typeof(Keys), buttonToPress.Text);
             var pressActiveTime= int.Parse(pressedFor.Text);
@@ -349,7 +351,7 @@ namespace AutoClicker
         /// </summary>
         private void EnableSettingFields()
         {
-            _run = false;
+            _clickMouse = false;
             mnuStart.Enabled = true;
             mnuStop.Enabled = false;
             minWait.Enabled = true;
@@ -372,8 +374,5 @@ namespace AutoClicker
         }
 
         #endregion
-
-        private void chkAutoType_CheckedChanged(object sender, EventArgs e) => 
-            ToggleAutoType(chkAutoType.Checked);
     }
 }
