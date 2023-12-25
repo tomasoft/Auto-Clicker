@@ -134,6 +134,11 @@ namespace AutoClicker
         private void chkAutoType_CheckedChanged(object sender, EventArgs e) => 
             ToggleAutoType(chkAutoType.Checked);
 
+        private void chkKeepPressed_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
         #endregion
 
         #region Form Methods
@@ -306,12 +311,17 @@ namespace AutoClicker
         {
             var isMouseInsideRobloxWindow = Win32.IsMouseInsideRobloxWindow(chkInRobloxOnly.Checked);
 
-            if (!_clickMouse || !isMouseInsideRobloxWindow) return;
+            if (!_clickMouse || !isMouseInsideRobloxWindow)
+                return;
 
-            //Call the imported function with the cursor's current position
             var x = (uint) Cursor.Position.X;
             var y = (uint) Cursor.Position.Y;
-            Win32.mouse_event(Win32.MouseEventLeftDown | Win32.MouseEventLeftUp, x, y, 0, 0);
+
+
+            if (chkKeepPressed.Checked)
+                Win32.mouse_event(Win32.MouseEventLeftDown, x, y, 0, 0);
+            else
+                Win32.mouse_event(Win32.MouseEventLeftDown | Win32.MouseEventLeftUp, x, y, 0, 0);
         }
 
         /// <summary>
@@ -326,14 +336,10 @@ namespace AutoClicker
             var key = (Keys)Enum.Parse(typeof(Keys), buttonToPress.Text);
             var pressActiveTime= int.Parse(pressedFor.Text);
             
-            //SendKeys.SendWait("E");
-
-
-            //isim.Keyboard.Sleep(pressActiveTime);
-            //isim.Keyboard.KeyUp(VirtualKeyCode.VK_E);
-
             _globalKeyboardHook.SendKeys(key, true);
+            
             Thread.Sleep(pressActiveTime);
+            
             _globalKeyboardHook.SendKeys(key, false);
         }
         
@@ -374,5 +380,6 @@ namespace AutoClicker
         }
 
         #endregion
+
     }
 }
