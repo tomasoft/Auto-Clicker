@@ -9,6 +9,8 @@ namespace AutoClicker
         //Mouse actions
         public const int MouseEventLeftDown = 0x02;
         public const int MouseEventLeftUp = 0x04;
+        public const int MouseEventRightDown = 0x08;
+        public const int MouseEventRightUp = 0x10;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);

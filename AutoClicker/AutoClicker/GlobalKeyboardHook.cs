@@ -177,6 +177,8 @@ namespace AutoClicker
 
 
             public bool IsControlPressed;
+            public bool IsShiftPressed;
+            public bool IsAltPressed;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -239,6 +241,8 @@ namespace AutoClicker
             var p = (LowLevelKeyboardInputEvent) o;
             
             p.IsControlPressed = Control.ModifierKeys.HasFlag(Keys.Control);
+            p.IsShiftPressed = Control.ModifierKeys.HasFlag(Keys.Shift);
+            p.IsAltPressed = Control.ModifierKeys.HasFlag(Keys.Alt);
 
             var eventArguments = new GlobalKeyboardHookEventArgs(p, (KeyboardState) wParamTyped);
 
