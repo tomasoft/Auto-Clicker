@@ -143,6 +143,12 @@ namespace AutoClicker
         [DllImport("user32.dll", SetLastError = true)]
         private static extern uint SendInput(uint nInputs, Input[] pInputs, int cbSize);
 
+        [DllImport("user32.dll")]
+        private static extern uint MapVirtualKey(uint uCode, uint uMapType);
+
+        [DllImport("user32.dll")]
+        private static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
         [StructLayout(LayoutKind.Sequential)]
         public struct LowLevelKeyboardInputEvent
         {
@@ -185,8 +191,26 @@ namespace AutoClicker
         private struct Input
         {
             public uint Type;
-            public KeyBdInput KeyboardInput;
-            private readonly HardwareInput HardwareInput;
+            public InputUnion Data;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct InputUnion
+        {
+            [FieldOffset(0)] public MouseInput MouseInput;
+            [FieldOffset(0)] public KeyBdInput KeyboardInput;
+            [FieldOffset(0)] public HardwareInput HardwareInput;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MouseInput
+        {
+            public int X;
+            public int Y;
+            public uint MouseData;
+            public uint Flags;
+            public uint Time;
+            public IntPtr ExtraInfo;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -202,9 +226,9 @@ namespace AutoClicker
         [StructLayout(LayoutKind.Sequential)]
         private struct HardwareInput
         {
-            private readonly uint Msg;
-            private readonly ushort ParamL;
-            private readonly ushort ParamH;
+            public uint Msg;
+            public ushort ParamL;
+            public ushort ParamH;
         }
 
         public const int WhKeyboardLl = 13;
@@ -212,6 +236,11 @@ namespace AutoClicker
 
         private const int InputKeyboard = 1;
         private const uint KeyEventFKeyup = 0x0002;
+        private const uint KeyEventFScancode = 0x0008;
+        private const uint KeyEventFExtendedkey = 0x0001;
+        private const uint MapvkVkToVsc = 0;
+        private const int WmKeydown = 0x0100;
+        private const int WmKeyup = 0x0101;
 
         public enum KeyboardState
         {
@@ -261,23 +290,108 @@ namespace AutoClicker
             return fEatKeyStroke ? (IntPtr) 1 : CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
         }
 
-        public void SendKeys(Keys key, bool keyDown)
+        public void SendKeys(Keys key, bool keyDown, IntPtr targetWindow = default)
         {
+            var virtualKey = (ushort)((int)key & 0xFF);
+            var scanCode = (ushort)MapVirtualKey(virtualKey, MapvkVkToVsc);
+            var extended = IsExtendedKey(virtualKey);
+
+            SendInputVirtualKey(virtualKey, scanCode, keyDown, extended);
+
+            if (targetWindow != IntPtr.Zero)
+                PostKeyMessage(targetWindow, virtualKey, scanCode, keyDown, extended);
+        }
+
+        private static bool IsExtendedKey(ushort virtualKey)
+        {
+            switch (virtualKey)
+            {
+                case 0x21:
+                case 0x22:
+                case 0x23:
+                case 0x24:
+                case 0x25:
+                case 0x26:
+                case 0x27:
+                case 0x28:
+                case 0x2D:
+                case 0x2E:
+                case 0x5B:
+                case 0x5C:
+                case 0x6F:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static int BuildKeyLParam(ushort scanCode, bool keyUp, bool extended)
+        {
+            var lParam = 1 | (scanCode << 16);
+            if (extended) lParam |= 1 << 24;
+            if (keyUp) lParam |= 3 << 30;
+            return lParam;
+        }
+
+        private static void PostKeyMessage(IntPtr targetWindow, ushort virtualKey, ushort scanCode, bool keyDown, bool extended)
+        {
+            var message = keyDown ? WmKeydown : WmKeyup;
+            var lParam = BuildKeyLParam(scanCode, !keyDown, extended);
+            PostMessage(targetWindow, (uint)message, (IntPtr)virtualKey, (IntPtr)lParam);
+        }
+
+        private void SendInputVirtualKey(ushort virtualKey, ushort scanCode, bool keyDown, bool extended)
+        {
+            uint flags = keyDown ? 0 : KeyEventFKeyup;
+            if (extended) flags |= KeyEventFExtendedkey;
+
             var input = new Input
             {
                 Type = InputKeyboard,
-                KeyboardInput = new KeyBdInput
+                Data = new InputUnion
                 {
-                    VirtualKey = (ushort)key,
-                    ScanCode = 0,
-                    Flags = keyDown ? 0 : KeyEventFKeyup,
-                    Time = 0,
-                    ExtraInfo = IntPtr.Zero
+                    KeyboardInput = new KeyBdInput
+                    {
+                        VirtualKey = virtualKey,
+                        ScanCode = scanCode,
+                        Flags = flags,
+                        Time = 0,
+                        ExtraInfo = IntPtr.Zero
+                    }
                 }
             };
 
             var inputs = new[] { input };
+            var inputSize = Marshal.SizeOf(typeof(Input));
 
+            if (SendInput((uint)inputs.Length, inputs, inputSize) != 0) return;
+
+            SendInputScanCode(virtualKey, scanCode, keyDown, extended);
+        }
+
+        private void SendInputScanCode(ushort virtualKey, ushort scanCode, bool keyDown, bool extended)
+        {
+            uint flags = KeyEventFScancode;
+            if (!keyDown) flags |= KeyEventFKeyup;
+            if (extended) flags |= KeyEventFExtendedkey;
+
+            var input = new Input
+            {
+                Type = InputKeyboard,
+                Data = new InputUnion
+                {
+                    KeyboardInput = new KeyBdInput
+                    {
+                        VirtualKey = 0,
+                        ScanCode = scanCode,
+                        Flags = flags,
+                        Time = 0,
+                        ExtraInfo = IntPtr.Zero
+                    }
+                }
+            };
+
+            var inputs = new[] { input };
             SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
         }
     }

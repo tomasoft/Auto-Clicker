@@ -6,6 +6,7 @@ namespace AutoClicker
 {
     public class Win32
     {
+        private const uint GaRoot = 2;
         //Mouse actions
         public const int MouseEventLeftDown = 0x02;
         public const int MouseEventLeftUp = 0x04;
@@ -35,6 +36,9 @@ namespace AutoClicker
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         static extern int GetWindowTextLength(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr hwnd, uint gaFlags);
+
         public static string GetWindowTitle(IntPtr hWnd)
         {
             var length = GetWindowTextLength(hWnd) + 1;
@@ -53,7 +57,17 @@ namespace AutoClicker
 
             if (hWnd == IntPtr.Zero) return false;
             
-            return GetWindowTitle(hWnd) == "Roblox";
+            var title = GetWindowTitle(hWnd);
+            return title.IndexOf("Roblox", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        public static IntPtr GetWindowHandleUnderCursor()
+        {
+            var w32Mouse = new Point();
+            GetCursorPos(ref w32Mouse);
+            var hWnd = WindowFromPoint(w32Mouse);
+
+            return hWnd == IntPtr.Zero ? IntPtr.Zero : GetAncestor(hWnd, GaRoot);
         }
     }
 }

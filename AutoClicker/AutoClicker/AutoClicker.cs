@@ -13,10 +13,14 @@ namespace AutoClicker
         private int _maxTimeDefault = 30;
         private const int DelayTime = 5000;
         private const int PressedFor = 500;
-        private const string ButtonToPress = "W";
+        private const string ButtonToPress = "E";
         
         private bool _clickMouse;
-        private bool _pressKey;
+        private volatile bool _pressKey;
+        private volatile bool _keyIsDown;
+        private Keys _activeKey;
+        private IntPtr _activeKeyTargetWindow;
+        private readonly object _keyStateLock = new object();
 
         private bool _fastMode = true;
         private bool _keepPressed = false;
@@ -50,7 +54,7 @@ namespace AutoClicker
         private void mnuQuit_Click(object sender, EventArgs e)
         {
             ToggleAutoClicker(false);
-            ToggleAutoType(false);
+            StopAutoType();
             Application.Exit();
         }
 
@@ -94,14 +98,14 @@ namespace AutoClicker
             {
                 if (active)
                 {
+                    if (_pressKey) return;
+
                     AutoTypeOnNewThread();
-                    chkAutoType.Checked = true;
                     _pressKey = true;
                 }
                 else
                 {
-                    chkAutoType.Checked = false;
-                    _pressKey = false;
+                    StopAutoType();
                 }
             }
             else
@@ -116,6 +120,13 @@ namespace AutoClicker
                 }
 
                 MessageBox.Show(errorMessage, caption, errorButtons, errorIcon);
+
+                if (chkAutoType.Checked)
+                {
+                    chkAutoType.CheckedChanged -= chkAutoType_CheckedChanged;
+                    chkAutoType.Checked = false;
+                    chkAutoType.CheckedChanged += chkAutoType_CheckedChanged;
+                }
             }
         }
 
@@ -197,7 +208,6 @@ namespace AutoClicker
                 {
                     notifyIcon1.Icon = Icon.FromHandle(Properties.Resources.mouse_white.GetHicon());
                     _clickMouse = false;
-                    _pressKey = false;
                     EnableSettingFields();
                 }
             }
@@ -294,9 +304,52 @@ namespace AutoClicker
             {
                 IsBackground = true
             };
+            t.SetApartmentState(ApartmentState.STA);
 
             t.Start();
         }
+
+        private void StopAutoType()
+        {
+            _pressKey = false;
+            ReleaseActiveKey();
+        }
+
+        private void ReleaseActiveKey()
+        {
+            lock (_keyStateLock)
+            {
+                if (!_keyIsDown) return;
+
+                _globalKeyboardHook.SendKeys(_activeKey, false, _activeKeyTargetWindow);
+                _keyIsDown = false;
+            }
+        }
+
+        private void InterruptibleSleep(int milliseconds)
+        {
+            var remaining = milliseconds;
+            while (remaining > 0 && _pressKey)
+            {
+                var slice = Math.Min(remaining, 50);
+                Thread.Sleep(slice);
+                remaining -= slice;
+            }
+        }
+
+        private T InvokeOnUiThread<T>(Func<T> action)
+        {
+            if (!InvokeRequired) return action();
+            return (T)Invoke(action);
+        }
+
+        private string GetButtonToPressText() => InvokeOnUiThread(() => buttonToPress.Text);
+
+        private string GetPressedForText() => InvokeOnUiThread(() => pressedFor.Text);
+
+        private int GetDelayTimeMs() => InvokeOnUiThread(() => int.Parse(delayTime.Text));
+
+        private bool GetAllowEverywhere() => InvokeOnUiThread(() => chkInRobloxOnly.Checked);
 
         private void AutoClick()
         {
@@ -323,14 +376,18 @@ namespace AutoClicker
 
         private void AutoType()
         {
-            var pressDelayTime = int.Parse(delayTime.Text);
-            var keyToPress = buttonToPress.Text; // Capture UI value before entering loop
-            var pressDuration = pressedFor.Text;
-            
-            while (_pressKey)
+            try
             {
-                DoType(keyToPress, pressDuration);
-                Thread.Sleep(pressDelayTime);
+                while (_pressKey)
+                {
+                    DoType();
+                    if (!_pressKey) break;
+                    InterruptibleSleep(GetDelayTimeMs());
+                }
+            }
+            finally
+            {
+                ReleaseActiveKey();
             }
         }
 
@@ -452,26 +509,40 @@ namespace AutoClicker
         /// <summary>
         ///     Simulates a click at the cursor's current location
         /// </summary>
-        private void DoType(string keyToPress, string pressDuration)
+        private void DoType()
         {
-            var isMouseInsideRobloxWindow = Win32.IsMouseInsideRobloxWindow(chkInRobloxOnly.Checked);
+            var allowEverywhere = GetAllowEverywhere();
+            var isMouseInsideRobloxWindow = Win32.IsMouseInsideRobloxWindow(allowEverywhere);
 
             if (!_pressKey || !isMouseInsideRobloxWindow) return;
 
-            var key = ParseKeyString(keyToPress);
+            var key = ParseKeyString(GetButtonToPressText());
             
             if (key == Keys.None)
-            {
-                // Invalid key - silently return or could show error
                 return;
+
+            var pressActiveTime = int.Parse(GetPressedForText());
+            var targetWindow = allowEverywhere ? IntPtr.Zero : Win32.GetWindowHandleUnderCursor();
+
+            lock (_keyStateLock)
+            {
+                if (!_pressKey) return;
+
+                _globalKeyboardHook.SendKeys(key, true, targetWindow);
+                _keyIsDown = true;
+                _activeKey = key;
+                _activeKeyTargetWindow = targetWindow;
             }
-            var pressActiveTime = int.Parse(pressDuration);
 
-            _globalKeyboardHook.SendKeys(key, true);
+            InterruptibleSleep(pressActiveTime);
 
-            Thread.Sleep(pressActiveTime);
+            lock (_keyStateLock)
+            {
+                if (!_keyIsDown) return;
 
-            _globalKeyboardHook.SendKeys(key, false);
+                _globalKeyboardHook.SendKeys(key, false, targetWindow);
+                _keyIsDown = false;
+            }
         }
         
         private void slowToolStripMenuItem_Click(object sender, EventArgs e)
